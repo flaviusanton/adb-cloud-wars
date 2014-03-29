@@ -209,11 +209,26 @@ public class ProClient {
         	List<Pair> m = killRange(enemy);
         	for (Pair p : badMoves) {
         		if (m.contains(p)) {
+        			// set a smaller priority to cells attacked by the enemy
         			p.priority -= ATTACK_CELL;
         		}
         	}
             badMoves.addAll(killRange(enemy));
         }
+        
+        // set priority for altitude
+        for (Pair p : allMoves) {
+        	int prior = Math.abs(10 - plane.altitude);
+        	if (prior > 10) prior = 1;
+        	
+        	if (pairToStr(plane, p).equals("forward")) {
+        		p.priority += prior;
+        	}
+        	else {
+        		p.priority -= prior;
+        	}
+        }
+        
 
         // remove badMoves
         for (Pair p : allMoves) {
