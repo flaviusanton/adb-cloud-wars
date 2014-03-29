@@ -196,15 +196,65 @@ public class ProClient {
 		Collections.shuffle(dirs);
 
 		Map<String, Object> move = new HashMap<String, Object>();
+        List<Pair> allMoves = move_range(plane);
+        String strMove = "forward";
+
+        for (Pair p : allMoves) {
+            if (!isInBounds(p))
+                allMoves.remove(p);
+        }
+
+        if (allMoves == null || allMoves.isEmpty()) {
+            strMove = "forward"; //default move
+        } else {
+            strMove = pairToStr(plane, allMoves.get(0));
+        }
 
 		move.put("unitID", plane.id);
-		move.put("direction", dirs.get(0));
+		move.put("direction", strMove);
 		move.put("weapon", false);
 		
 		return move;
 	}
-	
- 	private void initGame() {
+
+    private String pairToStr(Plane plane, Pair pair) {
+        if (plane.direction.equals("north")) {
+            if (pair.y < plane.y)
+                return "forward";
+            if (pair.x < plane.x)
+                return "left";
+            return "right";
+        }
+
+        if (plane.direction.equals("south")) {
+            if (pair.y > plane.y)
+                return "forward";
+            if (pair.x < plane.x)
+                return "right";
+            return "left";
+        }
+
+        if (plane.direction.equals("west")) {
+            if (pair.x < plane.x)
+                return "forward";
+            if (pair.y < plane.y)
+                return "right";
+            return "left";
+        }
+
+        if (plane.direction.equals("east")) {
+            if (pair.x > plane.x)
+                return "forward";
+            if (pair.y < plane.y)
+                return "left";
+            return "right";
+        }
+
+        System.out.println("*** NASOOOOOL ***");
+        return "forward";
+    }
+
+    private void initGame() {
 		if(userId == 0) {
 			try {
 				Map<String, Object> m = jsonRPCClient.quickmatch(userId);
@@ -253,56 +303,9 @@ public class ProClient {
             return false;
         return true;
     }
-    
-    private List<Pair> moveRange(Plane p) {
- 		ArrayList<Pair> result = new ArrayList<Pair>();
- 		
- 		if(p.direction.equals("north")) {
- 			if(isInBounds(new Pair(p.x, p.y + 1)))
- 				result.add(new Pair(p.x, p.y + 1));
- 			
- 			if(isInBounds(new Pair(p.x + 1, p.y)))
- 				result.add(new Pair(p.x + 1, p.y));
 
- 			if(isInBounds(new Pair(p.x - 1, p.y)))
- 				result.add(new Pair(p.x - 1, p.y));
- 		}
- 		
- 		if(p.direction.equals("west")) {
- 			if(isInBounds(new Pair(p.x, p.y + 1)))
- 				result.add(new Pair(p.x, p.y + 1));
+    private List<Pair> move_range(Plane plane) {
+        return new ArrayList<Pair>();
+    }
 
- 			if(isInBounds(new Pair(p.x, p.y - 1)))
- 				result.add(new Pair(p.x, p.y - 1));
- 		
- 			
- 			if(isInBounds(new Pair(p.x - 1, p.y)))
- 				result.add(new Pair(p.x - 1, p.y));
- 		}
- 		
- 		if(p.direction.equals("east")) {
- 			if(isInBounds(new Pair(p.x, p.y + 1)))
- 				result.add(new Pair(p.x, p.y + 1));
-
- 			if(isInBounds(new Pair(p.x, p.y - 1)))
- 				result.add(new Pair(p.x, p.y - 1));
-
- 			if(isInBounds(new Pair(p.x + 1, p.y)))
- 				result.add(new Pair(p.x + 1, p.y));
- 		}
- 		
- 		if(p.direction.equals("south")) {
- 			if(isInBounds(new Pair(p.x, p.y - 1)))
- 				result.add(new Pair(p.x, p.y - 1));
-
- 			if(isInBounds(new Pair(p.x + 1, p.y)))
- 				result.add(new Pair(p.x + 1, p.y));
-
- 			if(isInBounds(new Pair(p.x - 1, p.y)))
- 				result.add(new Pair(p.x - 1, p.y));
-
- 		}
- 		
- 		return result;
- 	}
 }
