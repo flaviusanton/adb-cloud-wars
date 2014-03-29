@@ -157,14 +157,14 @@ public class ProClient {
 		return true;
 	}
 	
-    public List<Pair> kill_range(Plane p) {
+    public List<Pair> killRange(Plane p) {
                List<Pair> result = new ArrayList<Pair>();
 
                boolean north = true, east = true, south = true, west = true;
-               if (p.equals("north")) south = false;
-               if (p.equals("south")) north = false;
-               if (p.equals("east")) west = false;
-               if (p.equals("west")) east = false;
+               if (p.direction.equals("north")) south = false;
+               if (p.direction.equals("south")) north = false;
+               if (p.direction.equals("east")) west = false;
+               if (p.direction.equals("west")) east = false;
 
                if (north) {
                        for (int i = 2; i <= p.weaponRange; i++) {
