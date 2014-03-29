@@ -23,8 +23,8 @@ public class ProClient {
     private List<Plane> friendlyPlanes;
     private List<Plane> enemyPlanes;
 
-    private List<Pair> madeMoves;
-
+    private Map<Plane, List<Pair>> planeMoves;
+    
     private int xMax;
     private int yMax;
 
@@ -59,11 +59,14 @@ public class ProClient {
 			ArrayList<Map<String, Object>> moves = new ArrayList<Map<String, Object>>();
 
             buildPlanesVectors();
-
+            
+            planeMoves = new HashMap<Plane, List<Pair>>();
             for (Plane plane : friendlyPlanes) {
-                moves.add(getMove(plane));
+                planeMoves.put(plane, getMove(plane));
             }
 			
+            //TODO: choose one move for each plane
+            
 			try {
 				unitStates = jsonRPCClient.unitStates(userId, gameId, moves);
 			} catch (Exception e) {
@@ -80,8 +83,6 @@ public class ProClient {
     private void buildPlanesVectors() {
         yMax = tiles.size();
         xMax = ((List<Object>)tiles.get(0)).size();
-
-        madeMoves = new ArrayList<Pair>();
 
         redPlanes       = new ArrayList<Plane>();
         bluePlanes      = new ArrayList<Plane>();
@@ -194,20 +195,12 @@ public class ProClient {
                return result;          
     }
 	
-	private Map<String, Object> getMove(Plane plane) {
-
+	private List<Pair> getMove(Plane plane) {
         System.out.println(plane);
         System.out.println("xMax: " + xMax + "   yMax: " + yMax);
 
-        List<String> dirs = Arrays.asList(directions);
-		Collections.shuffle(dirs);
-
-		Map<String, Object> move = new HashMap<String, Object>();
         List<Pair> allMoves = moveRange2(plane);
         List<Pair> badMoves = new ArrayList<Pair>();
-        String strMove = "forward";
-        Pair theMove = new Pair(0, 0);
-
 
         // build badMoves
         for (Plane enemy : enemyPlanes) {
@@ -215,42 +208,14 @@ public class ProClient {
         }
 
         // remove badMoves
-        List<Pair> tmp = new ArrayList<Pair>();
-        tmp.addAll(allMoves);
-
         for (Pair p : allMoves) {
-            if (badMoves.contains(p))
-                tmp.remove(p);
-            else if (madeMoves.contains(p))
-                tmp.remove(p);
+            if (badMoves.contains(p));
+                //p.priority -= 
         }
-
-        allMoves.clear();
-        allMoves.addAll(tmp);
-
-
-
-        if (allMoves == null || allMoves.isEmpty()) {
-            strMove = "forward"; //default move
-            System.out.println("*** NASOOOOOL ***");
-        } else {
-            theMove = allMoves.get(Math.abs(new Random().nextInt() % allMoves.size()));
-            strMove = pairToStr(plane, theMove);
-        }
-
-        madeMoves.add(theMove);
-
+ 
         System.out.println("All moves " + allMoves);
-        System.out.println("Am ales: " + theMove.x + " " + theMove.y);
-        System.out.println(strMove);
-        System.out.println("*****************");
-
-
-        move.put("unitID", plane.id);
-		move.put("direction", strMove);
-		move.put("weapon", false);
-		
-		return move;
+        
+        return allMoves;
 	}
 
     private String pairToStr(Plane plane, Pair pair) {
