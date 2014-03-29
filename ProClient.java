@@ -291,11 +291,13 @@ public class ProClient {
     }
 
     private void initGame() {
-		if(userId == 0) {
+		if(gameId == 0) {
 			try {
+				System.out.println(gameId);
 				Map<String, Object> m = jsonRPCClient.quickmatch(userId);
-				userId = (Integer) m.get("userID");
+				gameId = (Integer) m.get("gameID");
 				color  = (String) m.get("playerColor");
+				System.out.println(gameId);				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
