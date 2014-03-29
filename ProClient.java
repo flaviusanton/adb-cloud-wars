@@ -1,9 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import CloudOfWar.CloudOfWar;
 import JSONRPC.Client;
@@ -21,11 +16,16 @@ public class ProClient {
 	
 	private List<Object> tiles;
 	private Map<String, Object> unitStates;
-	
 
-	private static String[] directions = {"left", "forward", "right"}; 
-	
-	public ProClient(int userId, String userApiKey, int gameId) {
+    private List<Plane> redPlanes;
+    private List<Plane> bluePlanes;
+    private List<Plane> planes;
+    private List<Plane> friendlyPlanes;
+    private List<Plane> enemyPlanes;
+
+	private static String[] directions = {"left", "forward", "right"};
+
+    public ProClient(int userId, String userApiKey, int gameId) {
 		this.userId     = userId;
 		this.userApiKey = userApiKey;
 		this.gameId     = gameId;
@@ -52,9 +52,12 @@ public class ProClient {
 		
 		while(true) {
 			ArrayList<Map<String, Object>> moves = new ArrayList<Map<String, Object>>();
-			for(Map<String, Object> plane : (List<Map<String, Object>>) unitStates.get(color)) {
-				moves.add(getMove(plane));
-			}
+
+            buildPlanesVectors();
+
+            for (Plane plane : friendlyPlanes) {
+                moves.add(getMove(plane));
+            }
 			
 			try {
 				unitStates = jsonRPCClient.unitStates(userId, gameId, moves);
@@ -68,8 +71,60 @@ public class ProClient {
 		
 		endGame();
 	}
-	
-	private void endGame() {
+
+    private void buildPlanesVectors() {
+        redPlanes       = new ArrayList<Plane>();
+        bluePlanes      = new ArrayList<Plane>();
+        friendlyPlanes  = new ArrayList<Plane>();
+        planes          = new ArrayList<Plane>();
+        enemyPlanes     = new ArrayList<Plane>();
+
+        for(Map<String, Object> plane : (List<Map<String, Object>>) unitStates.get("red")) {
+            Plane p = new Plane();
+            p.id = (Integer) plane.get("ID");
+            p.tick = (Integer) plane.get("tick");
+            p.x = (Integer) plane.get("tileX");
+            p.y = (Integer) plane.get("tileY");
+            p.ammo = (Integer) plane.get("ammunition");
+            p.altitude = (Integer) plane.get("altitude");
+            p.direction = (String) plane.get("direction");
+            p.weaponRange = (Integer) plane.get("weaponRange");
+            p.weapon = (Boolean) plane.get("weapon");
+            p.color = "red";
+
+            redPlanes.add(p);
+            planes.add(p);
+
+            if (color.equals("red"))
+                friendlyPlanes.add(p);
+            else
+                enemyPlanes.add(p);
+        }
+
+        for(Map<String, Object> plane : (List<Map<String, Object>>) unitStates.get("blue")) {
+            Plane p = new Plane();
+            p.id = (Integer) plane.get("ID");
+            p.tick = (Integer) plane.get("tick");
+            p.x = (Integer) plane.get("tileX");
+            p.y = (Integer) plane.get("tileY");
+            p.ammo = (Integer) plane.get("ammunition");
+            p.altitude = (Integer) plane.get("altitude");
+            p.direction = (String) plane.get("direction");
+            p.weaponRange = (Integer) plane.get("weaponRange");
+            p.weapon = (Boolean) plane.get("weapon");
+            p.color = "blue";
+
+            bluePlanes.add(p);
+            planes.add(p);
+
+            if (color.equals("blue"))
+                friendlyPlanes.add(p);
+            else
+                enemyPlanes.add(p);
+        }
+    }
+
+    private void endGame() {
 		if(!flagWon)
 			System.out.println("You lost!\n");
 		else
@@ -88,7 +143,7 @@ public class ProClient {
 		}
 		
 		List<Object> enemyPlanes = (List<Object>) unitStates.get(enemyColor);
-		if(planes.size() > 0)
+		if(enemyPlanes.size() > 0)
 			return false;
 		
 		flagWon = true;
@@ -96,12 +151,13 @@ public class ProClient {
 		return true;
 	}
 	
-	private Map<String, Object> getMove(Map<String, Object> state) {
+	private Map<String, Object> getMove(Plane plane) {
 		List<String> dirs = Arrays.asList(directions);
 		Collections.shuffle(dirs);
-		
+
 		Map<String, Object> move = new HashMap<String, Object>();
-		move.put("unitID", state.get("ID"));
+
+		move.put("unitID", plane.id);
 		move.put("direction", dirs.get(0));
 		move.put("weapon", false);
 		
@@ -112,7 +168,7 @@ public class ProClient {
 		if(userId == 0) {
 			try {
 				Map<String, Object> m = jsonRPCClient.quickmatch(userId);
-				userId = (int) m.get("userID");
+				userId = (Integer) m.get("userID");
 				color  = (String) m.get("playerColor");
 			} catch (Exception e) {
 				e.printStackTrace();
