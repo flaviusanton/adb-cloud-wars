@@ -211,4 +211,12 @@ public class ProClient {
 			e.printStackTrace();
 		}
 	}
+
+    private Boolean isInBounds(Pair pair) {
+        if (pair.x < 1 || pair.x >= xMax)
+            return false;
+        if (pair.y < 1 || pair.y >= yMax)
+            return false;
+        return true;
+    }
 }
