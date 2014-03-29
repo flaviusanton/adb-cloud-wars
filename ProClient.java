@@ -23,6 +23,8 @@ public class ProClient {
     private List<Plane> friendlyPlanes;
     private List<Plane> enemyPlanes;
 
+    private List<Pair> madeMoves;
+
     private int xMax;
     private int yMax;
 
@@ -78,6 +80,8 @@ public class ProClient {
     private void buildPlanesVectors() {
         yMax = tiles.size();
         xMax = ((List<Object>)tiles.get(0)).size();
+
+        madeMoves = new ArrayList<Pair>();
 
         redPlanes       = new ArrayList<Plane>();
         bluePlanes      = new ArrayList<Plane>();
@@ -189,41 +193,6 @@ public class ProClient {
                
                return result;          
     }
-    
-    public List<Pair> moveRange(Plane p) {
-        List<Pair> result = new ArrayList<Pair>();
-
-        boolean north = true, east = true, south = true, west = true;
-        if (p.direction.equals("north")) south = false;
-        if (p.direction.equals("south")) north = false;
-        if (p.direction.equals("east")) west = false;
-        if (p.direction.equals("west")) east = false;
-
-        if (north) {
-                for (int i = 1; i <= 1; i++) {
-                        result.add(new Pair(p.x, p.y + i));
-                }
-        }
-        if (south) {
-                for (int i = 1; i <= 1; i++) {
-                        result.add(new Pair(p.x, p.y - i));
-                }
-        }
-        if (west) {
-                for (int i = 1; i <= 1; i++) {
-                        result.add(new Pair(p.x + i, p.y));
-                }
-        }
-        if (east) {
-                for (int i = 1; i <= 1; i++) {
-                        result.add(new Pair(p.x - i, p.y));
-                }
-        }
-        
-        return result;          
-}
-
-
 	
 	private Map<String, Object> getMove(Plane plane) {
 
@@ -234,7 +203,7 @@ public class ProClient {
 		Collections.shuffle(dirs);
 
 		Map<String, Object> move = new HashMap<String, Object>();
-        List<Pair> allMoves = moveRange(plane);
+        List<Pair> allMoves = moveRange2(plane);
         List<Pair> badMoves = new ArrayList<Pair>();
         String strMove = "forward";
         Pair theMove = new Pair(0, 0);
@@ -252,6 +221,8 @@ public class ProClient {
         for (Pair p : allMoves) {
             if (badMoves.contains(p))
                 tmp.remove(p);
+            else if (madeMoves.contains(p))
+                tmp.remove(p);
         }
 
         allMoves.clear();
@@ -266,7 +237,10 @@ public class ProClient {
             theMove = allMoves.get(Math.abs(new Random().nextInt() % allMoves.size()));
             strMove = pairToStr(plane, theMove);
         }
-        System.out.println("All moves " + theMove);
+
+        madeMoves.add(theMove);
+
+        System.out.println("All moves " + allMoves);
         System.out.println("Am ales: " + theMove.x + " " + theMove.y);
         System.out.println(strMove);
         System.out.println("*****************");
