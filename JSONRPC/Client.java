@@ -203,7 +203,7 @@ public class Client {
 				if(result.get("strJSONRPCEndpointURL") != null)
 					strJSONRPCEndpointURL = (String) result.get("strJSONRPCEndpointURL");
 				if(result.get("bCalled") != null)
-					bCalled = (boolean) result.get("bCalled");
+					bCalled = (Boolean) result.get("bCalled");
 			}
 				
 			
