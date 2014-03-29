@@ -67,7 +67,17 @@ public class ProClient {
                 planeMoves.put(plane, getMove(plane));
             }
 			
-            //TODO: choose one move for each plane
+            for (Plane plane : friendlyPlanes) {
+                List<Pair> thisPlaneMoves = planeMoves.get(plane);
+                Collections.sort(thisPlaneMoves);
+                Pair theMove = thisPlaneMoves.get(0);
+
+                Map<String, Object> move = new HashMap<String, Object>();
+                move.put("unitID", plane.id);
+                move.put("direction", pairToStr(plane, theMove));
+                move.put("weapon", false);
+                moves.add(move);
+            }
             
 			try {
 				unitStates = jsonRPCClient.unitStates(userId, gameId, moves);
@@ -201,43 +211,35 @@ public class ProClient {
         System.out.println(plane);
         System.out.println("xMax: " + xMax + "   yMax: " + yMax);
 
-        List<Pair> allMoves = moveRange2(plane);
+        List<Pair> allMoves = moveRange(plane);
         List<Pair> badMoves = new ArrayList<Pair>();
 
         // build badMoves
         for (Plane enemy : enemyPlanes) {
         	List<Pair> m = killRange(enemy);
-        	for (Pair p : badMoves) {
-        		if (m.contains(p)) {
-        			// set a smaller priority to cells attacked by the enemy
-        			p.priority -= ATTACK_CELL;
-        		}
-        	}
-            badMoves.addAll(killRange(enemy));
+            for (Pair p : allMoves) {
+		        if (badMoves.contains(p)) {
+        		    p.priority -=  ATTACK_CELL;
+        	    } else {
+                	p.priority = -ATTACK_CELL;
+                }
+            }
+            badMoves.addAll(m);
         }
-        
+
         // set priority for altitude
         for (Pair p : allMoves) {
-        	int prior = Math.abs(10 - plane.altitude);
-        	if (prior > 10) prior = 1;
-        	
-        	if (pairToStr(plane, p).equals("forward")) {
-        		p.priority += prior;
-        	}
-        	else {
-        		p.priority -= prior;
-        	}
-        }
-        
+            int prior = Math.abs(10 - plane.altitude);
+            if (prior > 10) prior = 1;
 
-        // remove badMoves
-        for (Pair p : allMoves) {
-            if (badMoves.contains(p));
-                //p.priority -= 
-        }
+            if (pairToStr(plane, p).equals("forward")) {
+                p.priority += prior;
+            } else {
+                p.priority -= prior;
+            }
+	    }
  
         System.out.println("All moves " + allMoves);
-        
         return allMoves;
 	}
 
@@ -330,7 +332,7 @@ public class ProClient {
         return true;
     }
 
-    private List<Pair> moveRange2(Plane p) {
+    private List<Pair> moveRange(Plane p) {
  		ArrayList<Pair> result = new ArrayList<Pair>();
  		
  		if(p.direction.equals("north")) {
