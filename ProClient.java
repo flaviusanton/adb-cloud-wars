@@ -313,7 +313,7 @@ public class ProClient {
         return true;
     }
 
-    private List<Pair> moveRange(Plane p) {
+    private Listk<Pair> moveRange(Plane p) {
  		ArrayList<Pair> result = new ArrayList<Pair>();
  		
  		if(p.direction.equals("north")) {
