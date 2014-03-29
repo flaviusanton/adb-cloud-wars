@@ -189,6 +189,40 @@ public class ProClient {
                
                return result;          
     }
+    
+    public List<Pair> moveRange(Plane p) {
+        List<Pair> result = new ArrayList<Pair>();
+
+        boolean north = true, east = true, south = true, west = true;
+        if (p.direction.equals("north")) south = false;
+        if (p.direction.equals("south")) north = false;
+        if (p.direction.equals("east")) west = false;
+        if (p.direction.equals("west")) east = false;
+
+        if (north) {
+                for (int i = 1; i <= 1; i++) {
+                        result.add(new Pair(p.x, p.y + i));
+                }
+        }
+        if (south) {
+                for (int i = 1; i <= 1; i++) {
+                        result.add(new Pair(p.x, p.y - i));
+                }
+        }
+        if (west) {
+                for (int i = 1; i <= 1; i++) {
+                        result.add(new Pair(p.x + i, p.y));
+                }
+        }
+        if (east) {
+                for (int i = 1; i <= 1; i++) {
+                        result.add(new Pair(p.x - i, p.y));
+                }
+        }
+        
+        return result;          
+}
+
 
 	
 	private Map<String, Object> getMove(Plane plane) {
@@ -203,7 +237,7 @@ public class ProClient {
 
         // build badMoves
         for (Plane enemy : enemyPlanes) {
-            badMoves.addAll(kill_range(enemy));
+            badMoves.addAll(killRange(enemy));
         }
 
         // remove badMoves
@@ -313,7 +347,7 @@ public class ProClient {
         return true;
     }
 
-    private Listk<Pair> moveRange(Plane p) {
+    private List<Pair> moveRange2(Plane p) {
  		ArrayList<Pair> result = new ArrayList<Pair>();
  		
  		if(p.direction.equals("north")) {
