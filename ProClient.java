@@ -196,7 +196,7 @@ public class ProClient {
 		Collections.shuffle(dirs);
 
 		Map<String, Object> move = new HashMap<String, Object>();
-        List<Pair> allMoves = move_range(plane);
+        List<Pair> allMoves = moveRange(plane);
         String strMove = "forward";
 
         for (Pair p : allMoves) {
@@ -304,8 +304,55 @@ public class ProClient {
         return true;
     }
 
-    private List<Pair> move_range(Plane plane) {
-        return new ArrayList<Pair>();
-    }
+    private List<Pair> moveRange(Plane p) {
+ 		ArrayList<Pair> result = new ArrayList<Pair>();
+ 		
+ 		if(p.direction.equals("north")) {
+ 			if(isInBounds(new Pair(p.x, p.y + 1)))
+ 				result.add(new Pair(p.x, p.y + 1));
+ 			
+ 			if(isInBounds(new Pair(p.x + 1, p.y)))
+ 				result.add(new Pair(p.x + 1, p.y));
 
+ 			if(isInBounds(new Pair(p.x - 1, p.y)))
+ 				result.add(new Pair(p.x - 1, p.y));
+ 		}
+ 		
+ 		if(p.direction.equals("west")) {
+ 			if(isInBounds(new Pair(p.x, p.y + 1)))
+ 				result.add(new Pair(p.x, p.y + 1));
+
+ 			if(isInBounds(new Pair(p.x, p.y - 1)))
+ 				result.add(new Pair(p.x, p.y - 1));
+ 		
+ 			
+ 			if(isInBounds(new Pair(p.x - 1, p.y)))
+ 				result.add(new Pair(p.x - 1, p.y));
+ 		}
+ 		
+ 		if(p.direction.equals("east")) {
+ 			if(isInBounds(new Pair(p.x, p.y + 1)))
+ 				result.add(new Pair(p.x, p.y + 1));
+
+ 			if(isInBounds(new Pair(p.x, p.y - 1)))
+ 				result.add(new Pair(p.x, p.y - 1));
+
+ 			if(isInBounds(new Pair(p.x + 1, p.y)))
+ 				result.add(new Pair(p.x + 1, p.y));
+ 		}
+ 		
+ 		if(p.direction.equals("south")) {
+ 			if(isInBounds(new Pair(p.x, p.y - 1)))
+ 				result.add(new Pair(p.x, p.y - 1));
+
+ 			if(isInBounds(new Pair(p.x + 1, p.y)))
+ 				result.add(new Pair(p.x + 1, p.y));
+
+ 			if(isInBounds(new Pair(p.x - 1, p.y)))
+ 				result.add(new Pair(p.x - 1, p.y));
+
+ 		}
+ 		
+ 		return result;
+ 	}
 }
