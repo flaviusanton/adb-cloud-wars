@@ -197,15 +197,24 @@ public class ProClient {
 
 		Map<String, Object> move = new HashMap<String, Object>();
         List<Pair> allMoves = moveRange(plane);
+        List<Pair> badMoves = new ArrayList<Pair>();
         String strMove = "forward";
 
+
+        // build badMoves
+        for (Plane enemy : enemyPlanes) {
+            badMoves.addAll(kill_range(enemy));
+        }
+
+        // remove badMoves
         for (Pair p : allMoves) {
-            if (!isInBounds(p))
+            if (badMoves.contains(p))
                 allMoves.remove(p);
         }
 
         if (allMoves == null || allMoves.isEmpty()) {
             strMove = "forward"; //default move
+            System.out.println("*** NASOOOOOL ***");
         } else {
             strMove = pairToStr(plane, allMoves.get(0));
         }
@@ -297,9 +306,9 @@ public class ProClient {
 	}
 
     private Boolean isInBounds(Pair pair) {
-        if (pair.x < 1 || pair.x >= xMax)
+        if (pair.x < 1 || pair.x > xMax)
             return false;
-        if (pair.y < 1 || pair.y >= yMax)
+        if (pair.y < 1 || pair.y > yMax)
             return false;
         return true;
     }

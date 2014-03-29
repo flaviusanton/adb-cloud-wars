@@ -9,4 +9,13 @@ public class Pair {
         this.x = fst;
         this.y = snd;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        Pair p = (Pair)o;
+
+        if (p.x != x || p.y != y)
+            return false;
+        return true;
+    }
 }
