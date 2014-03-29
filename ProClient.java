@@ -226,13 +226,18 @@ public class ProClient {
 
 	
 	private Map<String, Object> getMove(Plane plane) {
-		List<String> dirs = Arrays.asList(directions);
+
+        System.out.println(plane);
+        System.out.println("xMax: " + xMax + "   yMax: " + yMax);
+
+        List<String> dirs = Arrays.asList(directions);
 		Collections.shuffle(dirs);
 
 		Map<String, Object> move = new HashMap<String, Object>();
         List<Pair> allMoves = moveRange(plane);
         List<Pair> badMoves = new ArrayList<Pair>();
         String strMove = "forward";
+        Pair theMove = new Pair(0, 0);
 
 
         // build badMoves
@@ -241,19 +246,33 @@ public class ProClient {
         }
 
         // remove badMoves
+        List<Pair> tmp = new ArrayList<Pair>();
+        tmp.addAll(allMoves);
+
         for (Pair p : allMoves) {
             if (badMoves.contains(p))
-                allMoves.remove(p);
+                tmp.remove(p);
         }
+
+        allMoves.clear();
+        allMoves.addAll(tmp);
+
+
 
         if (allMoves == null || allMoves.isEmpty()) {
             strMove = "forward"; //default move
             System.out.println("*** NASOOOOOL ***");
         } else {
-            strMove = pairToStr(plane, allMoves.get(0));
+            theMove = allMoves.get(Math.abs(new Random().nextInt() % allMoves.size()));
+            strMove = pairToStr(plane, theMove);
         }
+        System.out.println("All moves " + theMove);
+        System.out.println("Am ales: " + theMove.x + " " + theMove.y);
+        System.out.println(strMove);
+        System.out.println("*****************");
 
-		move.put("unitID", plane.id);
+
+        move.put("unitID", plane.id);
 		move.put("direction", strMove);
 		move.put("weapon", false);
 		
@@ -340,9 +359,9 @@ public class ProClient {
 	}
 
     private Boolean isInBounds(Pair pair) {
-        if (pair.x < 1 || pair.x > xMax)
+        if (pair.x < 0 || pair.x >= xMax)
             return false;
-        if (pair.y < 1 || pair.y > yMax)
+        if (pair.y < 0 || pair.y >= yMax)
             return false;
         return true;
     }
@@ -351,12 +370,15 @@ public class ProClient {
  		ArrayList<Pair> result = new ArrayList<Pair>();
  		
  		if(p.direction.equals("north")) {
- 			if(isInBounds(new Pair(p.x, p.y + 1)))
- 				result.add(new Pair(p.x, p.y + 1));
- 			
+            // up
+ 			if(isInBounds(new Pair(p.x, p.y - 1)))
+ 				result.add(new Pair(p.x, p.y - 1));
+
+            // right
  			if(isInBounds(new Pair(p.x + 1, p.y)))
  				result.add(new Pair(p.x + 1, p.y));
 
+            // left
  			if(isInBounds(new Pair(p.x - 1, p.y)))
  				result.add(new Pair(p.x - 1, p.y));
  		}
@@ -385,8 +407,8 @@ public class ProClient {
  		}
  		
  		if(p.direction.equals("south")) {
- 			if(isInBounds(new Pair(p.x, p.y - 1)))
- 				result.add(new Pair(p.x, p.y - 1));
+ 			if(isInBounds(new Pair(p.x, p.y + 1)))
+ 				result.add(new Pair(p.x, p.y + 1));
 
  			if(isInBounds(new Pair(p.x + 1, p.y)))
  				result.add(new Pair(p.x + 1, p.y));

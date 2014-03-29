@@ -17,4 +17,14 @@ public class Plane {
     public Plane() {
 
     }
+
+    @Override
+    public String toString() {
+        return "ID: " + id + "\n" +
+                "X: " + x + "\n" +
+                "Y: " + y + "\n" +
+                "Dir:" + direction + "\n" +
+                "Ammo: " + ammo + "\n" +
+                "Alt: "  + altitude + "\n";
+    }
 }
