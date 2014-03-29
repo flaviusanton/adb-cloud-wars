@@ -157,6 +157,40 @@ public class ProClient {
 		return true;
 	}
 	
+    public List<Pair> kill_range(Plane p) {
+               List<Pair> result = new ArrayList<Pair>();
+
+               boolean north = true, east = true, south = true, west = true;
+               if (p.equals("north")) south = false;
+               if (p.equals("south")) north = false;
+               if (p.equals("east")) west = false;
+               if (p.equals("west")) east = false;
+
+               if (north) {
+                       for (int i = 2; i <= p.weaponRange; i++) {
+                               result.add(new Pair(p.x, p.y + i));
+                       }
+               }
+               if (south) {
+                       for (int i = 2; i <= p.weaponRange; i++) {
+                               result.add(new Pair(p.x, p.y - i));
+                       }
+               }
+               if (west) {
+                       for (int i = 2; i <= p.weaponRange; i++) {
+                               result.add(new Pair(p.x + i, p.y));
+                       }
+               }
+               if (east) {
+                       for (int i = 2; i <= p.weaponRange; i++) {
+                               result.add(new Pair(p.x - i, p.y));
+                       }
+               }
+               
+               return result;          
+    }
+
+	
 	private Map<String, Object> getMove(Plane plane) {
 		List<String> dirs = Arrays.asList(directions);
 		Collections.shuffle(dirs);
