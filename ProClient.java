@@ -23,6 +23,9 @@ public class ProClient {
     private List<Plane> friendlyPlanes;
     private List<Plane> enemyPlanes;
 
+    private int xMax;
+    private int yMax;
+
 	private static String[] directions = {"left", "forward", "right"};
 
     public ProClient(int userId, String userApiKey, int gameId) {
@@ -73,6 +76,9 @@ public class ProClient {
 	}
 
     private void buildPlanesVectors() {
+        yMax = tiles.size();
+        xMax = ((List<Object>)tiles.get(0)).size();
+
         redPlanes       = new ArrayList<Plane>();
         bluePlanes      = new ArrayList<Plane>();
         friendlyPlanes  = new ArrayList<Plane>();
