@@ -22,6 +22,8 @@ public class ProClient {
     private List<Plane> planes;
     private List<Plane> friendlyPlanes;
     private List<Plane> enemyPlanes;
+    
+    private int ATTACK_CELL = 3;
 
     private Map<Plane, List<Pair>> planeMoves;
     
@@ -204,6 +206,12 @@ public class ProClient {
 
         // build badMoves
         for (Plane enemy : enemyPlanes) {
+        	List<Pair> m = killRange(enemy);
+        	for (Pair p : badMoves) {
+        		if (m.contains(p)) {
+        			p.priority -= ATTACK_CELL;
+        		}
+        	}
             badMoves.addAll(killRange(enemy));
         }
 
