@@ -293,6 +293,7 @@ public class Client {
 	 */
 	public Object processRAWResponse(String strResult, boolean bErrorMode) throws Exception
 	{
+		//System.out.println(strResult);
 		JsonElement jsonResponse = null;
 
 		try {
@@ -325,8 +326,23 @@ public class Client {
 			{
 				if(jsonResponse.getAsJsonObject().get("result").isJsonPrimitive())
 					return jsonResponse.getAsJsonObject().get("result");
-				else
+				else {
+					if(jsonResponse.getAsJsonObject().get("result").isJsonArray()) {
+						ArrayList<Object> res = new ArrayList<Object>();
+						JsonArray arr = jsonResponse.getAsJsonObject().get("result").getAsJsonArray();
+						for(int i = 0; i < arr.size(); i++) {
+							JsonArray js = arr.get(i).getAsJsonArray();
+							ArrayList<Object> row = new ArrayList<Object>();
+							for(int j = 0; j < js.size(); j++) {
+								JsonElement elem = js.get(j);
+								row.add(elem.getAsString());
+							}
+							res.add(row);
+						}
+						return res;
+					}
 					return createMapFromJsonObject(jsonResponse.getAsJsonObject().get("result").getAsJsonObject());
+				}
 			}
 			
 			throw new JSONRPC_Exception(jsonResponse.getAsJsonObject().get("error").getAsJsonObject().get("message").toString(), jsonResponse.getAsJsonObject().get("error").getAsJsonObject().get("code").getAsInt());
