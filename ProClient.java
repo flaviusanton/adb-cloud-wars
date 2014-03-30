@@ -217,6 +217,8 @@ public class ProClient {
 
     public List<Pair> killRange(Plane p, int dive) {
                List<Pair> result = new ArrayList<Pair>();
+               
+               if (p.ammo == 0) return moveRange(p);
 
                boolean north = true, east = true, south = true, west = true;
                int s = 1, n = 1, w = 1, e = 1;
@@ -258,7 +260,7 @@ public class ProClient {
 
         // build badMoves
         for (Plane enemyPlane : enemyPlanes) {
-            List<Pair> krange = killRange(enemyPlane);
+            List<Pair> krange = killRange(enemyPlane, 1);
             for (Pair p : allMoves) {
                 if (krange.contains(p)) {
                     p.priority -= ATTACK_CELL;
