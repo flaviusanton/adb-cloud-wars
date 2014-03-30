@@ -192,22 +192,22 @@ public class ProClient {
                if (p.direction.equals("west")) east = false;
 
                if (north) {
-                       for (int i = 2; i <= p.weaponRange; i++) {
+                       for (int i = 2; i <= p.weaponRange + 1; i++) {
                                result.add(new Pair(p.x, p.y - i));
                        }
                }
                if (south) {
-                       for (int i = 2; i <= p.weaponRange; i++) {
+                       for (int i = 2; i <= p.weaponRange + 1; i++) {
                                result.add(new Pair(p.x, p.y + i));
                        }
                }
                if (west) {
-                       for (int i = 2; i <= p.weaponRange; i++) {
+                       for (int i = 2; i <= p.weaponRange + 1; i++) {
                                result.add(new Pair(p.x - i, p.y));
                        }
                }
                if (east) {
-                       for (int i = 2; i <= p.weaponRange; i++) {
+                       for (int i = 2; i <= p.weaponRange + 1; i++) {
                                result.add(new Pair(p.x + i, p.y));
                        }
                }
