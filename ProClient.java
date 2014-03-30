@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.*;
 
 import CloudOfWar.CloudOfWar;
@@ -23,8 +24,9 @@ public class ProClient {
     private List<Plane> friendlyPlanes;
     private List<Plane> enemyPlanes;
     
-    private int ATTACK_CELL = 3;
+    private int ATTACK_CELL  = 3;
     private int ATTACK_ENEMY = 2;
+    private int COLLISION    = 3;
 
     private Map<Plane, List<Pair>> planeMoves;
     
@@ -115,8 +117,30 @@ public class ProClient {
                 System.out.println("Chosen move: " + pairToStr(plane, theMove));
 
                 move.put("unitID", plane.id);
-                move.put("direction", pairToStr(plane, theMove));
-                move.put("weapon", theMove.fire);
+
+                if (plane.tick == 0) {
+                    List<String> dirs = Arrays.asList(directions);
+                    Collections.shuffle(dirs);
+
+                    // first
+                    switch (plane.id) {
+                        case 0:
+                            move.put("direction", "left");
+                            break;
+                        case 1:
+                            move.put("direction", dirs.get(0));
+                            break;
+                        case 2:
+                            move.put("direction", "forward");
+                            break;
+                        default:
+                            move.put("direction", "forward");
+                    }
+                    move.put("weapon", false);
+                } else {
+                    move.put("direction", pairToStr(plane, theMove));
+                    move.put("weapon", theMove.fire);
+                }
                 moves.add(move);
             }
             
@@ -302,7 +326,10 @@ public class ProClient {
 
         for (Pair p : allMoves) {
             int prior;
-            if (plane.altitude >= 6)
+
+            if (plane.altitude >= 10)
+                prior = -1;
+            else if (plane.altitude >= 6)
                 prior = 1;
             else
                 prior = 6 - plane.altitude;
@@ -354,6 +381,16 @@ public class ProClient {
             }
         }
 
+        // check collisions
+        for (Pair p : allMoves) {
+            for (Plane enemy : enemyPlanes) {
+                List<Pair> enemyMoveRange = moveRange(enemy);
+                if (enemyMoveRange.contains(p)) {
+                    p.priority -= COLLISION;
+                    break;
+                }
+            }
+        }
         return allMoves;
 	}
 
