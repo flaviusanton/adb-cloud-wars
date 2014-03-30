@@ -24,6 +24,7 @@ public class ProClient {
     private List<Plane> enemyPlanes;
     
     private int ATTACK_CELL = 3;
+    private int ATTACK_ENEMY = 2;
 
     private Map<Plane, List<Pair>> planeMoves;
     
@@ -73,9 +74,15 @@ public class ProClient {
                 Pair theMove = thisPlaneMoves.get(0);
 
                 Map<String, Object> move = new HashMap<String, Object>();
+
+                System.out.println("PlaneID: " + plane.id);
+                System.out.println("All moves " + thisPlaneMoves);
+                System.out.println("Chosen move: " + theMove);
+                System.out.println("Chosen move: " + pairToStr(plane, theMove));
+
                 move.put("unitID", plane.id);
                 move.put("direction", pairToStr(plane, theMove));
-                move.put("weapon", false);
+                move.put("weapon", theMove.fire);
                 moves.add(move);
             }
             
@@ -111,6 +118,7 @@ public class ProClient {
             p.ammo = (Integer) plane.get("ammunition");
             p.altitude = (Integer) plane.get("altitude");
             p.direction = (String) plane.get("direction");
+
             p.weaponRange = (Integer) plane.get("weaponRange");
             p.weapon = (Boolean) plane.get("weapon");
             p.color = "red";
@@ -185,22 +193,22 @@ public class ProClient {
 
                if (north) {
                        for (int i = 2; i <= p.weaponRange; i++) {
-                               result.add(new Pair(p.x, p.y + i));
+                               result.add(new Pair(p.x, p.y - i));
                        }
                }
                if (south) {
                        for (int i = 2; i <= p.weaponRange; i++) {
-                               result.add(new Pair(p.x, p.y - i));
+                               result.add(new Pair(p.x, p.y + i));
                        }
                }
                if (west) {
                        for (int i = 2; i <= p.weaponRange; i++) {
-                               result.add(new Pair(p.x + i, p.y));
+                               result.add(new Pair(p.x - i, p.y));
                        }
                }
                if (east) {
                        for (int i = 2; i <= p.weaponRange; i++) {
-                               result.add(new Pair(p.x - i, p.y));
+                               result.add(new Pair(p.x + i, p.y));
                        }
                }
                
@@ -215,22 +223,25 @@ public class ProClient {
         List<Pair> badMoves = new ArrayList<Pair>();
 
         // build badMoves
-        for (Plane enemy : enemyPlanes) {
-        	List<Pair> m = killRange(enemy);
+        for (Plane enemyPlane : enemyPlanes) {
+            List<Pair> krange = killRange(enemyPlane);
             for (Pair p : allMoves) {
-		        if (badMoves.contains(p)) {
-        		    p.priority -=  ATTACK_CELL;
-        	    } else {
-                	p.priority = -ATTACK_CELL;
+                if (krange.contains(p)) {
+                    p.priority -= ATTACK_CELL;
+                    System.out.println("\n*** KILL ***");
                 }
             }
-            badMoves.addAll(m);
         }
 
+        //TODO: tune this
         // set priority for altitude
+
         for (Pair p : allMoves) {
-            int prior = Math.abs(10 - plane.altitude);
-            if (prior > 10) prior = 1;
+            int prior;
+            if (plane.altitude >= 6)
+                prior = 1;
+            else
+                prior = 6 - plane.altitude;
 
             if (pairToStr(plane, p).equals("forward")) {
                 p.priority += prior;
@@ -238,8 +249,32 @@ public class ProClient {
                 p.priority -= prior;
             }
 	    }
- 
-        System.out.println("All moves " + allMoves);
+
+        // check for kills
+        for (Pair p : allMoves) {
+            for (Plane enemy : enemyPlanes) {
+                List<Pair> enemyMoveRange = moveRange(enemy);
+                /*
+                Plane tmp = plane.clone(plane);
+                tmp.x = p.x;
+                tmp.y = p.y;
+                tmp.direction = pairToStr(plane, p);
+
+                List<Pair> pKillRange = killRange(tmp);
+                */
+                List<Pair> pKillRange = killRange(plane);
+
+                for (Pair enemyCell : enemyMoveRange) {
+                    if (pKillRange.contains(enemyCell) && plane.ammo > 0) {
+                        p.priority += ATTACK_ENEMY;
+                        p.fire = true;
+                    } else {
+                        p.fire = false;
+                    }
+                }
+            }
+        }
+
         return allMoves;
 	}
 

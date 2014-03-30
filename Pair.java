@@ -4,7 +4,8 @@
 public class Pair implements Comparable<Pair>{
     public Integer x;
     public Integer y;
-    public Integer priority;
+    public Integer priority = 0;
+    public Boolean fire = false;
 
     public Pair(Integer fst, Integer snd) {
         this.x = fst;
@@ -22,11 +23,11 @@ public class Pair implements Comparable<Pair>{
 
     @Override
     public String toString() {
-        return "[" + x + ", " + y + "]";
+        return "[" + x + ", " + y + ", " + priority + " " + fire + "]";
     }
 
     @Override
     public int compareTo(Pair o) {
-        return this.priority - o.priority;
+        return o.priority - this.priority;
     }
 }
