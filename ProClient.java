@@ -181,7 +181,34 @@ public class ProClient {
 		
 		return true;
 	}
-	
+
+    public List<Pair> killRange2(Plane p, String direction) {
+        List<Pair> result = new ArrayList<Pair>();
+
+        if (direction.equals("north")) {
+            for (int i = 2; i <= p.weaponRange + 1; i++) {
+                result.add(new Pair(p.x, p.y - i));
+            }
+        }
+        if (direction.equals("south")) {
+            for (int i = 2; i <= p.weaponRange + 1; i++) {
+                result.add(new Pair(p.x, p.y + i));
+            }
+        }
+        if (direction.equals("west")) {
+            for (int i = 2; i <= p.weaponRange + 1; i++) {
+                result.add(new Pair(p.x - i, p.y));
+            }
+        }
+        if (direction.equals("east")) {
+            for (int i = 2; i <= p.weaponRange + 1; i++) {
+                result.add(new Pair(p.x + i, p.y));
+            }
+        }
+
+        return result;
+    }
+
     public List<Pair> killRange(Plane p) {
                List<Pair> result = new ArrayList<Pair>();
 
@@ -262,14 +289,15 @@ public class ProClient {
 
                 List<Pair> pKillRange = killRange(tmp);
                 */
-                List<Pair> pKillRange = killRange(plane);
+                List<Pair> pKillRange = killRange2(plane, pairToStr(plane, p));
 
                 for (Pair enemyCell : enemyMoveRange) {
                     if (pKillRange.contains(enemyCell) && plane.ammo > 0) {
+                        System.out.println("EnemyMoveRange " + enemy.id + " " + enemyMoveRange);
+                        System.out.println("KillRange: " + plane.id +  " " + pKillRange);
                         p.priority += ATTACK_ENEMY;
                         p.fire = true;
-                    } else {
-                        p.fire = false;
+                        break;
                     }
                 }
             }
