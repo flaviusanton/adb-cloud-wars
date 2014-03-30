@@ -73,11 +73,39 @@ public class ProClient {
             for (Plane plane : friendlyPlanes) {
                 planeMoves.put(plane, getMove(plane));
             }
+
+            Map<Plane, List<Pair>> sortedChoicesMap = new HashMap<Plane, List<Pair>>();
+
+            for (Plane plane : friendlyPlanes) {
+                List<Pair> mvs = planeMoves.get(plane);
+                Collections.sort(mvs);
+                sortedChoicesMap.put(plane, mvs);
+            }
+
+            Map<Plane, Pair> finalMoves = new HashMap<Plane, Pair>();
+
+            for (Plane plane : friendlyPlanes) {
+                List<Pair> mvs = sortedChoicesMap.get(plane);
+                if (mvs.size() == 1)
+                    finalMoves.put(plane, mvs.get(0));
+            }
+
+            for (Plane plane : friendlyPlanes) {
+                if (finalMoves.get(plane) != null)
+                    continue;
+                else {
+                    List<Pair> mvs = sortedChoicesMap.get(plane);
+                    if (finalMoves.values().contains(mvs.get(0))) {
+                        finalMoves.put(plane, mvs.get(1));
+                    } else {
+                        finalMoves.put(plane, mvs.get(0));
+                    }
+                }
+            }
 			
             for (Plane plane : friendlyPlanes) {
-                List<Pair> thisPlaneMoves = planeMoves.get(plane);
-                Collections.sort(thisPlaneMoves);
-                Pair theMove = thisPlaneMoves.get(0);
+                List<Pair> thisPlaneMoves = sortedChoicesMap.get(plane);
+                Pair theMove = finalMoves.get(plane);
 
                 Map<String, Object> move = new HashMap<String, Object>();
 
