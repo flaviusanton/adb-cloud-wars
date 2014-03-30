@@ -291,14 +291,6 @@ public class ProClient {
             for (Plane enemy : enemyPlanes) {
                 List<Pair> enemyMoveRange = moveRange(enemy);
                 System.out.println("Moverange: " + enemyMoveRange);
-                /*
-                Plane tmp = plane.clone(plane);
-                tmp.x = p.x;
-                tmp.y = p.y;
-                tmp.direction = pairToStr(plane, p);
-
-                List<Pair> pKillRange = killRange(tmp);
-                */
 
                 for (Pair enemyCell : enemyMoveRange) {
                     if (pKillRange.contains(enemyCell) && plane.ammo > 0) {
@@ -306,6 +298,25 @@ public class ProClient {
                         System.out.println("KillRange: " + plane.id +  " " + pKillRange);
                         p.priority += ATTACK_ENEMY;
                         p.fire = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // check for friendly fire
+        for (Pair p : allMoves) {
+            List<Pair> pKillRange = killRange2(plane, p);
+
+            for (Plane friend : friendlyPlanes) {
+                if (friend.id == plane.id)
+                    continue;
+
+                List<Pair> friendMoveRange = moveRange(friend);
+
+                for (Pair friendlyCell : friendMoveRange) {
+                    if (pKillRange.contains(friendlyCell) && p.fire == true) {
+                        p.fire = false;
                         break;
                     }
                 }
