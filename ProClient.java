@@ -64,7 +64,7 @@ public class ProClient {
             buildPlanesVectors();
 
             try {
-                Thread.sleep(300);
+                Thread.sleep(200);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -215,37 +215,38 @@ public class ProClient {
         return result;
     }
 
-    public List<Pair> killRange(Plane p) {
+    public List<Pair> killRange(Plane p, int dive) {
                List<Pair> result = new ArrayList<Pair>();
 
                boolean north = true, east = true, south = true, west = true;
-               if (p.direction.equals("north")) south = false;
-               if (p.direction.equals("south")) north = false;
-               if (p.direction.equals("east")) west = false;
-               if (p.direction.equals("west")) east = false;
+               int s = 1, n = 1, w = 1, e = 1;
+               if (p.direction.equals("north")) { south = false; n = 2; }
+               if (p.direction.equals("south")) { north = false; s = 2; }
+               if (p.direction.equals("east")) { west = false; e = 2; }
+               if (p.direction.equals("west")) { east = false; w = 2; }
 
                if (north) {
-                       for (int i = 2; i <= p.weaponRange + 1; i++) {
+                       for (int i = 2; i <= p.weaponRange + n; i++) {
                                result.add(new Pair(p.x, p.y - i));
                        }
                }
                if (south) {
-                       for (int i = 2; i <= p.weaponRange + 1; i++) {
+                       for (int i = 2; i <= p.weaponRange + s; i++) {
                                result.add(new Pair(p.x, p.y + i));
                        }
                }
                if (west) {
-                       for (int i = 2; i <= p.weaponRange + 1; i++) {
+                       for (int i = 2; i <= p.weaponRange + w; i++) {
                                result.add(new Pair(p.x - i, p.y));
                        }
                }
                if (east) {
-                       for (int i = 2; i <= p.weaponRange + 1; i++) {
+                       for (int i = 2; i <= p.weaponRange + e; i++) {
                                result.add(new Pair(p.x + i, p.y));
                        }
                }
                
-               return result;          
+               return result;
     }
 	
 	private List<Pair> getMove(Plane plane) {
