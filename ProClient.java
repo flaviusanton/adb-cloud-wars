@@ -62,6 +62,12 @@ public class ProClient {
 			ArrayList<Map<String, Object>> moves = new ArrayList<Map<String, Object>>();
 
             buildPlanesVectors();
+
+            try {
+                Thread.sleep(300);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             
             planeMoves = new HashMap<Plane, List<Pair>>();
             for (Plane plane : friendlyPlanes) {
@@ -182,25 +188,25 @@ public class ProClient {
 		return true;
 	}
 
-    public List<Pair> killRange2(Plane p, String direction) {
+    public List<Pair> killRange2(Plane p, Pair pos) {
         List<Pair> result = new ArrayList<Pair>();
 
-        if (direction.equals("north")) {
+        if (pos.y  < p.y) {
             for (int i = 2; i <= p.weaponRange + 1; i++) {
                 result.add(new Pair(p.x, p.y - i));
             }
         }
-        if (direction.equals("south")) {
+        if (pos.y > p.y) {
             for (int i = 2; i <= p.weaponRange + 1; i++) {
                 result.add(new Pair(p.x, p.y + i));
             }
         }
-        if (direction.equals("west")) {
+        if (pos.x < p.x) {
             for (int i = 2; i <= p.weaponRange + 1; i++) {
                 result.add(new Pair(p.x - i, p.y));
             }
         }
-        if (direction.equals("east")) {
+        if (pos.x > p.x) {
             for (int i = 2; i <= p.weaponRange + 1; i++) {
                 result.add(new Pair(p.x + i, p.y));
             }
@@ -279,8 +285,12 @@ public class ProClient {
 
         // check for kills
         for (Pair p : allMoves) {
+            List<Pair> pKillRange = killRange2(plane, p);
+            System.out.println("Pkill: " + pKillRange);
+
             for (Plane enemy : enemyPlanes) {
                 List<Pair> enemyMoveRange = moveRange(enemy);
+                System.out.println("Moverange: " + enemyMoveRange);
                 /*
                 Plane tmp = plane.clone(plane);
                 tmp.x = p.x;
@@ -289,7 +299,6 @@ public class ProClient {
 
                 List<Pair> pKillRange = killRange(tmp);
                 */
-                List<Pair> pKillRange = killRange2(plane, pairToStr(plane, p));
 
                 for (Pair enemyCell : enemyMoveRange) {
                     if (pKillRange.contains(enemyCell) && plane.ammo > 0) {
