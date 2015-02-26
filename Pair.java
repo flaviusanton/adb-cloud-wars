@@ -1,9 +1,11 @@
 /**
  * Created by fanton on 29/03/14.
  */
-public class Pair {
+public class Pair implements Comparable<Pair>{
     public Integer x;
     public Integer y;
+    public Integer priority = 0;
+    public Boolean fire = false;
 
     public Pair(Integer fst, Integer snd) {
         this.x = fst;
@@ -21,6 +23,11 @@ public class Pair {
 
     @Override
     public String toString() {
-        return "[" + x + ", " + y + "]";
+        return "[" + x + ", " + y + ", " + priority + " " + fire + "]";
+    }
+
+    @Override
+    public int compareTo(Pair o) {
+        return o.priority - this.priority;
     }
 }

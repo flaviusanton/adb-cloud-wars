@@ -27,4 +27,20 @@ public class Plane {
                 "Ammo: " + ammo + "\n" +
                 "Alt: "  + altitude + "\n";
     }
+
+    public Plane clone(Plane p) {
+        Plane plane = new Plane();
+        plane.id = p.id;
+        plane.tick = p.tick;
+        plane.x = p.x;
+        plane.y = p.y;
+        plane.altitude = p.altitude;
+        plane.direction = p.direction;
+        plane.ammo = p.ammo;
+        plane.color = p.color;
+        plane.weapon = p.weapon;
+        plane.weaponRange = p.weaponRange;
+
+        return plane;
+    }
 }

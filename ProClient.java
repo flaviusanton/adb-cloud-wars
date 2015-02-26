@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.*;
 
 import CloudOfWar.CloudOfWar;
@@ -22,7 +23,13 @@ public class ProClient {
     private List<Plane> planes;
     private List<Plane> friendlyPlanes;
     private List<Plane> enemyPlanes;
+    
+    private int ATTACK_CELL  = 3;
+    private int ATTACK_ENEMY = 2;
+    private int COLLISION    = 3;
 
+    private Map<Plane, List<Pair>> planeMoves;
+    
     private int xMax;
     private int yMax;
 
@@ -58,10 +65,85 @@ public class ProClient {
 
             buildPlanesVectors();
 
+            try {
+                Thread.sleep(200);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            planeMoves = new HashMap<Plane, List<Pair>>();
             for (Plane plane : friendlyPlanes) {
-                moves.add(getMove(plane));
+                planeMoves.put(plane, getMove(plane));
+            }
+
+            Map<Plane, List<Pair>> sortedChoicesMap = new HashMap<Plane, List<Pair>>();
+
+            for (Plane plane : friendlyPlanes) {
+                List<Pair> mvs = planeMoves.get(plane);
+                Collections.sort(mvs);
+                sortedChoicesMap.put(plane, mvs);
+            }
+
+            Map<Plane, Pair> finalMoves = new HashMap<Plane, Pair>();
+
+            for (Plane plane : friendlyPlanes) {
+                List<Pair> mvs = sortedChoicesMap.get(plane);
+                if (mvs.size() == 1)
+                    finalMoves.put(plane, mvs.get(0));
+            }
+
+            for (Plane plane : friendlyPlanes) {
+                if (finalMoves.get(plane) != null)
+                    continue;
+                else {
+                    List<Pair> mvs = sortedChoicesMap.get(plane);
+                    if (finalMoves.values().contains(mvs.get(0))) {
+                        finalMoves.put(plane, mvs.get(1));
+                    } else {
+                        finalMoves.put(plane, mvs.get(0));
+                    }
+                }
             }
 			
+            for (Plane plane : friendlyPlanes) {
+                List<Pair> thisPlaneMoves = sortedChoicesMap.get(plane);
+                Pair theMove = finalMoves.get(plane);
+
+                Map<String, Object> move = new HashMap<String, Object>();
+
+                System.out.println("PlaneID: " + plane.id);
+                System.out.println("All moves " + thisPlaneMoves);
+                System.out.println("Chosen move: " + theMove);
+                System.out.println("Chosen move: " + pairToStr(plane, theMove));
+
+                move.put("unitID", plane.id);
+
+                if (plane.tick == 0) {
+                    List<String> dirs = Arrays.asList(directions);
+                    Collections.shuffle(dirs);
+
+                    // first
+                    switch (plane.id) {
+                        case 0:
+                            move.put("direction", "left");
+                            break;
+                        case 1:
+                            move.put("direction", dirs.get(0));
+                            break;
+                        case 2:
+                            move.put("direction", "forward");
+                            break;
+                        default:
+                            move.put("direction", "forward");
+                    }
+                    move.put("weapon", false);
+                } else {
+                    move.put("direction", pairToStr(plane, theMove));
+                    move.put("weapon", theMove.fire);
+                }
+                moves.add(move);
+            }
+            
 			try {
 				unitStates = jsonRPCClient.unitStates(userId, gameId, moves);
 			} catch (Exception e) {
@@ -94,6 +176,7 @@ public class ProClient {
             p.ammo = (Integer) plane.get("ammunition");
             p.altitude = (Integer) plane.get("altitude");
             p.direction = (String) plane.get("direction");
+
             p.weaponRange = (Integer) plane.get("weaponRange");
             p.weapon = (Boolean) plane.get("weapon");
             p.color = "red";
@@ -156,127 +239,159 @@ public class ProClient {
 		
 		return true;
 	}
-	
-    public List<Pair> killRange(Plane p) {
+
+    public List<Pair> killRange2(Plane p, Pair pos) {
+        List<Pair> result = new ArrayList<Pair>();
+
+        if (pos.y  < p.y) {
+            for (int i = 2; i <= p.weaponRange + 1; i++) {
+                result.add(new Pair(p.x, p.y - i));
+            }
+        }
+        if (pos.y > p.y) {
+            for (int i = 2; i <= p.weaponRange + 1; i++) {
+                result.add(new Pair(p.x, p.y + i));
+            }
+        }
+        if (pos.x < p.x) {
+            for (int i = 2; i <= p.weaponRange + 1; i++) {
+                result.add(new Pair(p.x - i, p.y));
+            }
+        }
+        if (pos.x > p.x) {
+            for (int i = 2; i <= p.weaponRange + 1; i++) {
+                result.add(new Pair(p.x + i, p.y));
+            }
+        }
+
+        return result;
+    }
+
+    public List<Pair> killRange(Plane p, int dive) {
                List<Pair> result = new ArrayList<Pair>();
+               
+               if (p.ammo == 0) return moveRange(p);
 
                boolean north = true, east = true, south = true, west = true;
-               if (p.direction.equals("north")) south = false;
-               if (p.direction.equals("south")) north = false;
-               if (p.direction.equals("east")) west = false;
-               if (p.direction.equals("west")) east = false;
+               int s = 1, n = 1, w = 1, e = 1;
+               if (p.direction.equals("north")) { south = false; n = 2; }
+               if (p.direction.equals("south")) { north = false; s = 2; }
+               if (p.direction.equals("east")) { west = false; e = 2; }
+               if (p.direction.equals("west")) { east = false; w = 2; }
 
                if (north) {
-                       for (int i = 2; i <= p.weaponRange; i++) {
-                               result.add(new Pair(p.x, p.y + i));
-                       }
-               }
-               if (south) {
-                       for (int i = 2; i <= p.weaponRange; i++) {
+                       for (int i = 2; i <= p.weaponRange + n; i++) {
                                result.add(new Pair(p.x, p.y - i));
                        }
                }
-               if (west) {
-                       for (int i = 2; i <= p.weaponRange; i++) {
-                               result.add(new Pair(p.x + i, p.y));
+               if (south) {
+                       for (int i = 2; i <= p.weaponRange + s; i++) {
+                               result.add(new Pair(p.x, p.y + i));
                        }
                }
-               if (east) {
-                       for (int i = 2; i <= p.weaponRange; i++) {
+               if (west) {
+                       for (int i = 2; i <= p.weaponRange + w; i++) {
                                result.add(new Pair(p.x - i, p.y));
                        }
                }
+               if (east) {
+                       for (int i = 2; i <= p.weaponRange + e; i++) {
+                               result.add(new Pair(p.x + i, p.y));
+                       }
+               }
                
-               return result;          
+               return result;
     }
-    
-    public List<Pair> moveRange(Plane p) {
-        List<Pair> result = new ArrayList<Pair>();
-
-        boolean north = true, east = true, south = true, west = true;
-        if (p.direction.equals("north")) south = false;
-        if (p.direction.equals("south")) north = false;
-        if (p.direction.equals("east")) west = false;
-        if (p.direction.equals("west")) east = false;
-
-        if (north) {
-                for (int i = 1; i <= 1; i++) {
-                        result.add(new Pair(p.x, p.y + i));
-                }
-        }
-        if (south) {
-                for (int i = 1; i <= 1; i++) {
-                        result.add(new Pair(p.x, p.y - i));
-                }
-        }
-        if (west) {
-                for (int i = 1; i <= 1; i++) {
-                        result.add(new Pair(p.x + i, p.y));
-                }
-        }
-        if (east) {
-                for (int i = 1; i <= 1; i++) {
-                        result.add(new Pair(p.x - i, p.y));
-                }
-        }
-        
-        return result;          
-}
-
-
 	
-	private Map<String, Object> getMove(Plane plane) {
-
+	private List<Pair> getMove(Plane plane) {
         System.out.println(plane);
         System.out.println("xMax: " + xMax + "   yMax: " + yMax);
 
-        List<String> dirs = Arrays.asList(directions);
-		Collections.shuffle(dirs);
-
-		Map<String, Object> move = new HashMap<String, Object>();
         List<Pair> allMoves = moveRange(plane);
         List<Pair> badMoves = new ArrayList<Pair>();
-        String strMove = "forward";
-        Pair theMove = new Pair(0, 0);
-
 
         // build badMoves
-        for (Plane enemy : enemyPlanes) {
-            badMoves.addAll(killRange(enemy));
+        for (Plane enemyPlane : enemyPlanes) {
+            List<Pair> krange = killRange(enemyPlane, 1);
+            for (Pair p : allMoves) {
+                if (krange.contains(p)) {
+                    p.priority -= ATTACK_CELL;
+                    System.out.println("\n*** KILL ***");
+                }
+            }
         }
 
-        // remove badMoves
-        List<Pair> tmp = new ArrayList<Pair>();
-        tmp.addAll(allMoves);
+        //TODO: tune this
+        // set priority for altitude
 
         for (Pair p : allMoves) {
-            if (badMoves.contains(p))
-                tmp.remove(p);
+            int prior;
+
+            if (plane.altitude >= 10)
+                prior = -1;
+            else if (plane.altitude >= 6)
+                prior = 1;
+            else
+                prior = 6 - plane.altitude;
+
+            if (pairToStr(plane, p).equals("forward")) {
+                p.priority += prior;
+            } else {
+                p.priority -= prior;
+            }
+	    }
+
+        // check for kills
+        for (Pair p : allMoves) {
+            List<Pair> pKillRange = killRange2(plane, p);
+            System.out.println("Pkill: " + pKillRange);
+
+            for (Plane enemy : enemyPlanes) {
+                List<Pair> enemyMoveRange = moveRange(enemy);
+                System.out.println("Moverange: " + enemyMoveRange);
+
+                for (Pair enemyCell : enemyMoveRange) {
+                    if (pKillRange.contains(enemyCell) && plane.ammo > 0) {
+                        System.out.println("EnemyMoveRange " + enemy.id + " " + enemyMoveRange);
+                        System.out.println("KillRange: " + plane.id +  " " + pKillRange);
+                        p.priority += ATTACK_ENEMY;
+                        p.fire = true;
+                        break;
+                    }
+                }
+            }
         }
 
-        allMoves.clear();
-        allMoves.addAll(tmp);
+        // check for friendly fire
+        for (Pair p : allMoves) {
+            List<Pair> pKillRange = killRange2(plane, p);
 
+            for (Plane friend : friendlyPlanes) {
+                if (friend.id == plane.id)
+                    continue;
 
+                List<Pair> friendMoveRange = moveRange(friend);
 
-        if (allMoves == null || allMoves.isEmpty()) {
-            strMove = "forward"; //default move
-            System.out.println("*** NASOOOOOL ***");
-        } else {
-            theMove = allMoves.get(Math.abs(new Random().nextInt() % allMoves.size()));
-            strMove = pairToStr(plane, theMove);
+                for (Pair friendlyCell : friendMoveRange) {
+                    if (pKillRange.contains(friendlyCell) && p.fire == true) {
+                        p.fire = false;
+                        break;
+                    }
+                }
+            }
         }
-        System.out.println("All moves " + theMove);
-        System.out.println("Am ales: " + theMove.x + " " + theMove.y);
-        System.out.println(strMove);
-        System.out.println("*****************");
 
-
-        move.put("unitID", plane.id);
-		move.put("direction", strMove);
-		move.put("weapon", false);
-		
-		return move;
+        // check collisions
+        for (Pair p : allMoves) {
+            for (Plane enemy : enemyPlanes) {
+                List<Pair> enemyMoveRange = moveRange(enemy);
+                if (enemyMoveRange.contains(p)) {
+                    p.priority -= COLLISION;
+                    break;
+                }
+            }
+        }
+        return allMoves;
 	}
 
     private String pairToStr(Plane plane, Pair pair) {
@@ -317,11 +432,13 @@ public class ProClient {
     }
 
     private void initGame() {
-		if(userId == 0) {
+		if(gameId == 0) {
 			try {
+				System.out.println(gameId);
 				Map<String, Object> m = jsonRPCClient.quickmatch(userId);
-				userId = (Integer) m.get("userID");
+				gameId = (Integer) m.get("gameID");
 				color  = (String) m.get("playerColor");
+				System.out.println(gameId);				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -366,7 +483,7 @@ public class ProClient {
         return true;
     }
 
-    private List<Pair> moveRange2(Plane p) {
+    private List<Pair> moveRange(Plane p) {
  		ArrayList<Pair> result = new ArrayList<Pair>();
  		
  		if(p.direction.equals("north")) {
