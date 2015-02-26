@@ -3,4 +3,5 @@ adb-cloud-wars
 
 HostWay BESTEM Hackathon
 
-Cel mai interlop AI il facem noi aicia
+An AI for a 3 planes vs 3 planes game developed in a team of 3 during a hackathon
+organized by BEST Bucharest.
